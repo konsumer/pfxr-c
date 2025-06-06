@@ -118,6 +118,11 @@ pfxr_sound_t pfxr_get_default_sound(void);
 pfxr_sound_t pfxr_apply_template(pfxr_template_t template, int seed);
 void pfxr_free_wav_data(char* wav_data);
 
+// URL functions
+pfxr_sound_t* pfxr_create_sound_from_url(const char* url);
+char* pfxr_get_url_from_sound(const pfxr_sound_t* config);
+void pfxr_free_sound_config(pfxr_sound_t* config);
+
 // Random number generator functions
 void pfxr_random_init(pfxr_random_t* rng, uint32_t seed);
 float pfxr_random_float(pfxr_random_t* rng, float min, float max);

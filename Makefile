@@ -65,7 +65,7 @@ install: static shared
 
 # Clean build files
 clean:
-	rm -rf $(BUILD_DIR)
+	rm -rf $(BUILD_DIR) *.wav
 
 # Debug build
 debug: CFLAGS += -g -DDEBUG

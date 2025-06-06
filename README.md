@@ -87,6 +87,12 @@ char* pfxr_create_sound_from_config(const pfxr_sound_t* config);
 
 // Free WAV data returned by memory-based functions
 void pfxr_free_wav_data(char* wav_data);
+
+// given a URL, output params
+pfxr_sound_t* pfxr_create_sound_from_url(const char* url);
+
+// given params, output URL
+char* pfxr_get_url_from_sound(const pfxr_sound_t* config);
 ```
 
 ### Templates
