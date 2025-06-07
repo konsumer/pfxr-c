@@ -95,6 +95,11 @@ endif
 debug: CFLAGS += -g -DDEBUG
 debug: examples
 
+# Build wasm version
+wasm: $(BUILD_DIR)/pfxr.mjs
+$(BUILD_DIR)/pfxr.mjs: pfxr.c $(BUILD_DIR)
+	emcc --no-entry -o $@ $< -O3 -sEXPORTED_FUNCTIONS="_pfxr_get_default_sound,_pfxr_create_sound_from_template,_pfxr_create_sound_from_config,_pfxr_create_params_from_url,_pfxr_get_url_from_params"
+
 # Validate header syntax
 validate:
 	@echo "Validating pfxr.h syntax..."

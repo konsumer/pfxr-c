@@ -315,10 +315,10 @@ if (url) {
 The single-header library works on:
 
 - **Linux** (GCC, Clang)
-- **macOS** (Clang, GCC)
+- **macOS** (GCC, Clang)
 - **Windows** (MSVC, MinGW, Clang)
 - **Embedded systems** (with C99 support)
-- **WebAssembly** (with Emscripten)
+- **WebAssembly** (with Emscripten, although you should probably just use the original typescript version)
 
 ## Common Usage Patterns
 
