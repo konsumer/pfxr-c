@@ -41,38 +41,38 @@ typedef struct {
     // Waveform and volume
     int waveForm;
     float volume;
-    
+
     // Sound envelope
     float attackTime;
     float sustainTime;
     float sustainPunch;
     float decayTime;
-    
+
     // Pitch
     float frequency;
     float pitchDelta;
     float pitchDuration;
     float pitchDelay;
-    
+
     // Vibrato
     float vibratoRate;
     float vibratoDepth;
-    
+
     // Tremolo
     float tremoloRate;
     float tremoloDepth;
-    
+
     // Filters
     float highPassCutoff;
     float highPassResonance;
     float lowPassCutoff;
     float lowPassResonance;
-    
+
     // Phaser
     float phaserBaseFrequency;
     float phaserLfoFrequency;
     float phaserDepth;
-    
+
     // Noise
     float noiseAmount;
 } pfxr_sound_t;
@@ -119,8 +119,8 @@ pfxr_sound_t pfxr_apply_template(pfxr_template_t template, int seed);
 void pfxr_free_wav_data(char* wav_data);
 
 // URL functions
-pfxr_sound_t* pfxr_create_sound_from_url(const char* url);
-char* pfxr_get_url_from_sound(const pfxr_sound_t* config);
+pfxr_sound_t* pfxr_create_params_from_url(const char* url);
+char* pfxr_get_url_from_params(const pfxr_sound_t* config);
 void pfxr_free_sound_config(pfxr_sound_t* config);
 
 // Random number generator functions

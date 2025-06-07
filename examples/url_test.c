@@ -47,7 +47,7 @@ void test_url_roundtrip() {
     print_sound_config(&original, "Original");
 
     // Convert to URL
-    char* url = pfxr_get_url_from_sound(&original);
+    char* url = pfxr_get_url_from_params(&original);
     if (!url) {
         printf("ERROR: Failed to create URL from sound\n");
         return;
@@ -60,7 +60,7 @@ void test_url_roundtrip() {
     printf("Full URL: %s\n", full_url);
 
     // Convert back from URL
-    pfxr_sound_t* restored = pfxr_create_sound_from_url(full_url);
+    pfxr_sound_t* restored = pfxr_create_params_from_url(full_url);
     if (!restored) {
         printf("ERROR: Failed to create sound from URL\n");
         free(url);
@@ -71,7 +71,7 @@ void test_url_roundtrip() {
 
     // Compare values
     printf("\nComparison:\n");
-    printf("  waveForm: %d -> %d %s\n", original.waveForm, restored->waveForm, 
+    printf("  waveForm: %d -> %d %s\n", original.waveForm, restored->waveForm,
            original.waveForm == restored->waveForm ? "✓" : "✗");
     printf("  volume: %.3f -> %.3f %s\n", original.volume, restored->volume,
            (original.volume - restored->volume) < 0.001f ? "✓" : "✗");
@@ -99,33 +99,33 @@ void test_template_urls() {
 
     const char* template_names[] = {
         "PICKUP",
-        "LASER", 
+        "LASER",
         "JUMP",
         "EXPLOSION"
     };
 
     for (int i = 0; i < 4; i++) {
         printf("\n%s Template:\n", template_names[i]);
-        
+
         pfxr_sound_t config = pfxr_apply_template(templates[i], 12345);
-        char* url = pfxr_get_url_from_sound(&config);
-        
+        char* url = pfxr_get_url_from_params(&config);
+
         if (url) {
             printf("  URL: %s\n", url);
-            
+
             // Test parsing it back
             char full_url[1024];
             snprintf(full_url, sizeof(full_url), "https://example.com/sound%s", url);
-            pfxr_sound_t* parsed = pfxr_create_sound_from_url(full_url);
-            
+            pfxr_sound_t* parsed = pfxr_create_params_from_url(full_url);
+
             if (parsed) {
-                printf("  Parse test: ✓ (waveForm=%d, freq=%.1f)\n", 
+                printf("  Parse test: ✓ (waveForm=%d, freq=%.1f)\n",
                        parsed->waveForm, parsed->frequency);
                 pfxr_free_sound_config(parsed);
             } else {
                 printf("  Parse test: ✗\n");
             }
-            
+
             free(url);
         } else {
             printf("  ERROR: Failed to generate URL\n");
@@ -140,17 +140,17 @@ void test_edge_cases() {
 
     // Test NULL inputs
     printf("Testing NULL inputs:\n");
-    pfxr_sound_t* null_sound = pfxr_create_sound_from_url(NULL);
+    pfxr_sound_t* null_sound = pfxr_create_params_from_url(NULL);
     printf("  NULL URL: %s\n", null_sound ? "✗ (should be NULL)" : "✓");
 
-    char* null_url = pfxr_get_url_from_sound(NULL);
+    char* null_url = pfxr_get_url_from_params(NULL);
     printf("  NULL config: %s\n", null_url ? "✗ (should be NULL)" : "✓");
 
     // Test URL without fx parameter
     printf("\nTesting URL without fx parameter:\n");
-    pfxr_sound_t* default_sound = pfxr_create_sound_from_url("https://example.com/test?other=value");
+    pfxr_sound_t* default_sound = pfxr_create_params_from_url("https://example.com/test?other=value");
     if (default_sound) {
-        printf("  Returns default sound: ✓ (waveForm=%d, freq=%.1f)\n", 
+        printf("  Returns default sound: ✓ (waveForm=%d, freq=%.1f)\n",
                default_sound->waveForm, default_sound->frequency);
         pfxr_free_sound_config(default_sound);
     } else {
@@ -159,9 +159,9 @@ void test_edge_cases() {
 
     // Test malformed fx parameter
     printf("\nTesting malformed fx parameter:\n");
-    pfxr_sound_t* malformed_sound = pfxr_create_sound_from_url("https://example.com/test?fx=abc,def,123");
+    pfxr_sound_t* malformed_sound = pfxr_create_params_from_url("https://example.com/test?fx=abc,def,123");
     if (malformed_sound) {
-        printf("  Handles malformed data: ✓ (waveForm=%d, freq=%.1f)\n", 
+        printf("  Handles malformed data: ✓ (waveForm=%d, freq=%.1f)\n",
                malformed_sound->waveForm, malformed_sound->frequency);
         pfxr_free_sound_config(malformed_sound);
     } else {
@@ -170,9 +170,9 @@ void test_edge_cases() {
 
     // Test URL encoded characters
     printf("\nTesting URL encoded characters:\n");
-    pfxr_sound_t* encoded_sound = pfxr_create_sound_from_url("https://example.com/test?fx=2%2C0.5%2C0%2C0.07");
+    pfxr_sound_t* encoded_sound = pfxr_create_params_from_url("https://example.com/test?fx=2%2C0.5%2C0%2C0.07");
     if (encoded_sound) {
-        printf("  URL decoding: ✓ (waveForm=%d, volume=%.2f)\n", 
+        printf("  URL decoding: ✓ (waveForm=%d, volume=%.2f)\n",
                encoded_sound->waveForm, encoded_sound->volume);
         pfxr_free_sound_config(encoded_sound);
     } else {

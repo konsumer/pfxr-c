@@ -88,11 +88,11 @@ char* pfxr_create_sound_from_config(const pfxr_sound_t* config);
 // Free WAV data returned by memory-based functions
 void pfxr_free_wav_data(char* wav_data);
 
-// given a URL, output params
-pfxr_sound_t* pfxr_create_sound_from_url(const char* url);
+// Generate params from URL
+pfxr_sound_t* pfxr_create_params_from_url(const char* url);
 
-// given params, output URL
-char* pfxr_get_url_from_sound(const pfxr_sound_t* config);
+// Generate URL from params
+char* pfxr_get_url_from_params(const pfxr_sound_t* config);
 ```
 
 ### Templates
@@ -177,6 +177,7 @@ This C port maintains full compatibility with the original TypeScript PFXR libra
 - **Same randomization**: Uses the same XorShift algorithm for deterministic results
 - **Same parameters**: All sound parameters have identical ranges and behavior
 - **Same audio processing**: Faithful reproduction of the synthesis pipeline
+- **URL**: Interchangeable, so you can use [this UI](https://achtaitaipai.github.io/pfxr/) to get your sound right, then use the URL in your game-code
 
 Example equivalency:
 

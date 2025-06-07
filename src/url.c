@@ -7,11 +7,11 @@
 // Helper function to URL decode a string
 static char* url_decode(const char* encoded) {
     if (!encoded) return NULL;
-    
+
     size_t len = strlen(encoded);
     char* decoded = malloc(len + 1);
     if (!decoded) return NULL;
-    
+
     size_t i = 0, j = 0;
     while (i < len) {
         if (encoded[i] == '%' && i + 2 < len) {
@@ -39,12 +39,12 @@ static char* url_decode(const char* encoded) {
 // Helper function to URL encode a string
 static char* url_encode(const char* str) {
     if (!str) return NULL;
-    
+
     size_t len = strlen(str);
     // Worst case: every character needs encoding (3 chars each)
     char* encoded = malloc(len * 3 + 1);
     if (!encoded) return NULL;
-    
+
     size_t j = 0;
     for (size_t i = 0; i < len; i++) {
         char c = str[i];
@@ -64,36 +64,36 @@ static char* url_encode(const char* str) {
 // Helper function to find query parameter value
 static char* get_query_param(const char* url, const char* param) {
     if (!url || !param) return NULL;
-    
+
     // Find the start of query string
     const char* query_start = strchr(url, '?');
     if (!query_start) return NULL;
     query_start++; // Skip the '?'
-    
+
     // Look for the parameter
     char param_with_eq[256];
     snprintf(param_with_eq, sizeof(param_with_eq), "%s=", param);
-    
+
     const char* param_pos = strstr(query_start, param_with_eq);
     if (!param_pos) return NULL;
-    
+
     // Move to start of value
     const char* value_start = param_pos + strlen(param_with_eq);
-    
+
     // Find end of value (next & or end of string)
     const char* value_end = value_start;
     while (*value_end && *value_end != '&' && *value_end != '#') {
         value_end++;
     }
-    
+
     // Copy the value
     size_t value_len = value_end - value_start;
     char* value = malloc(value_len + 1);
     if (!value) return NULL;
-    
+
     strncpy(value, value_start, value_len);
     value[value_len] = '\0';
-    
+
     return value;
 }
 
@@ -158,90 +158,90 @@ static float get_sound_field(const pfxr_sound_t* sound, int index) {
 // Number of fields in the sound structure
 #define PFXR_FIELD_COUNT 22
 
-pfxr_sound_t* pfxr_create_sound_from_url(const char* url) {
+pfxr_sound_t* pfxr_create_params_from_url(const char* url) {
     if (!url) return NULL;
-    
+
     // Allocate memory for the sound configuration
     pfxr_sound_t* sound = malloc(sizeof(pfxr_sound_t));
     if (!sound) return NULL;
-    
+
     // Initialize with default values
     *sound = pfxr_get_default_sound();
-    
+
     // Get the 'fx' query parameter
     char* fx_param = get_query_param(url, "fx");
     if (!fx_param) {
         return sound; // Return default sound if no fx parameter
     }
-    
+
     // URL decode the parameter
     char* decoded = url_decode(fx_param);
     free(fx_param);
     if (!decoded) {
         return sound; // Return default sound if decoding fails
     }
-    
+
     // Split by comma and parse values
     char* token = strtok(decoded, ",");
     int index = 0;
-    
+
     while (token && index < PFXR_FIELD_COUNT) {
         char* endptr;
         float value = strtof(token, &endptr);
-        
+
         // Only set the value if it's a valid number
         if (*endptr == '\0' || *endptr == ' ') {
             set_sound_field(sound, index, value);
         }
-        
+
         token = strtok(NULL, ",");
         index++;
     }
-    
+
     free(decoded);
     return sound;
 }
 
-char* pfxr_get_url_from_sound(const pfxr_sound_t* config) {
+char* pfxr_get_url_from_params(const pfxr_sound_t* config) {
     if (!config) return NULL;
-    
+
     // Calculate buffer size needed
     // Each float can be up to ~15 characters, plus comma
     size_t buffer_size = PFXR_FIELD_COUNT * 16 + 100; // Extra space for URL parts
     char* url_buffer = malloc(buffer_size);
     if (!url_buffer) return NULL;
-    
+
     // Create comma-separated values string
     char values_buffer[PFXR_FIELD_COUNT * 16];
     values_buffer[0] = '\0';
-    
+
     for (int i = 0; i < PFXR_FIELD_COUNT; i++) {
         float value = get_sound_field(config, i);
         char value_str[16];
-        
+
         // Format the value, removing unnecessary decimal places
         if (i == 0) { // waveForm is an integer
             snprintf(value_str, sizeof(value_str), "%d", (int)value);
         } else {
             snprintf(value_str, sizeof(value_str), "%.6g", value);
         }
-        
+
         if (i > 0) {
             strcat(values_buffer, ",");
         }
         strcat(values_buffer, value_str);
     }
-    
+
     // URL encode the values
     char* encoded_values = url_encode(values_buffer);
     if (!encoded_values) {
         free(url_buffer);
         return NULL;
     }
-    
+
     // Create the URL string with the fx parameter
     snprintf(url_buffer, buffer_size, "?fx=%s", encoded_values);
-    
+
     free(encoded_values);
     return url_buffer;
 }
