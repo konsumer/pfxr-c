@@ -1,7 +1,8 @@
+#define PFXR_IMPLEMENTATION
+#include "../pfxr.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "../include/pfxr.h"
 
 void print_sound_config(const pfxr_sound_t* config, const char* name) {
     printf("\n%s Configuration:\n", name);

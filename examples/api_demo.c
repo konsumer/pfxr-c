@@ -1,7 +1,8 @@
+#define PFXR_IMPLEMENTATION
+#include "../pfxr.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "../include/pfxr.h"
 
 // Example function that matches the user's requested API
 char* createSoundFromTemplate(pfxr_template_t template, int seed) {

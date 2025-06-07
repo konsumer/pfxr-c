@@ -1,6 +1,7 @@
+#define PFXR_IMPLEMENTATION
+#include "../pfxr.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include "../include/pfxr.h"
 
 int main() {
     printf("PFXR URL Functions Demo\n");

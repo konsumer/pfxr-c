@@ -1,74 +1,55 @@
-# Detect OS
+# PFXR Single-Header Library Makefile
+# ===================================
+
+# Detect OS for platform-specific settings
 UNAME_S := $(shell uname -s)
 
+# Compiler settings
 CC = gcc
 CFLAGS = -Wall -Wextra -std=c99 -O2
-INCLUDES = -Iinclude
 LIBS = -lm
 
 # Platform-specific settings
 ifeq ($(UNAME_S),Linux)
-    CFLAGS += -fPIC
-    SHARED_EXT = .so
-    SHARED_FLAGS = -shared
-    INSTALL_PREFIX = /usr/local
-    LDCONFIG = sudo ldconfig
+    # Linux settings
 endif
 ifeq ($(UNAME_S),Darwin)
-    CFLAGS += -fPIC
-    SHARED_EXT = .dylib
-    SHARED_FLAGS = -dynamiclib -install_name @rpath/$(LIB_NAME)$(SHARED_EXT)
-    INSTALL_PREFIX = /usr/local
-    LDCONFIG =
+    # macOS settings
 endif
 ifeq ($(OS),Windows_NT)
-    SHARED_EXT = .dll
-    STATIC_EXT = .lib
-    SHARED_FLAGS = -shared -Wl,--out-implib,$(BUILD_DIR)/$(LIB_NAME).lib
-    INSTALL_PREFIX = C:/Program Files
-    LDCONFIG =
-else
-    STATIC_EXT = .a
+    # Windows settings
 endif
 
 # Directories
-SRC_DIR = src
-INC_DIR = include
 BUILD_DIR = build
 EXAMPLE_DIR = examples
-
-# Source files
-SOURCES = $(wildcard $(SRC_DIR)/*.c)
-OBJECTS = $(SOURCES:$(SRC_DIR)/%.c=$(BUILD_DIR)/%.o)
-
-# Library name
-LIB_NAME = libpfxr
-STATIC_LIB = $(LIB_NAME)$(STATIC_EXT)
-SHARED_LIB = $(LIB_NAME)$(SHARED_EXT)
 
 # Example programs
 EXAMPLE_SOURCES = $(wildcard $(EXAMPLE_DIR)/*.c)
 EXAMPLES = $(EXAMPLE_SOURCES:$(EXAMPLE_DIR)/%.c=$(BUILD_DIR)/%)
 
-.PHONY: help all clean static shared examples install
+.PHONY: all examples clean test help install
 
+# Default target
+all: examples
 
-# Help
+# Help target
 help:
-	@echo "PFXR C Library Build System"
+	@echo "PFXR Single-Header Library Build System"
+	@echo "========================================"
+	@echo ""
+	@echo "Usage: Include pfxr.h in your project with:"
+	@echo "  #define PFXR_IMPLEMENTATION"
+	@echo "  #include \"pfxr.h\""
 	@echo ""
 	@echo "Targets:"
-	@echo "  all      - Build static and shared libraries, plus examples"
-	@echo "  static   - Build static library only"
-	@echo "  shared   - Build shared library only"
+	@echo "  all      - Build example programs"
 	@echo "  examples - Build example programs"
-	@echo "  install  - Install libraries and headers to system"
-	@echo "  clean    - Remove all build files"
-	@echo "  debug    - Build with debug symbols"
 	@echo "  test     - Run basic functionality test"
+	@echo "  clean    - Remove all build files"
+	@echo "  install  - Install header to system"
 	@echo "  help     - Show this help message"
 
-all: static shared examples
 
 # Create build directory
 $(BUILD_DIR):
@@ -78,43 +59,27 @@ else
 	mkdir -p $(BUILD_DIR)
 endif
 
-# Compile object files
-$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c | $(BUILD_DIR)
-	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
-
-# Build static library
-static: $(BUILD_DIR)/$(STATIC_LIB)
-
-$(BUILD_DIR)/$(STATIC_LIB): $(OBJECTS)
-	ar rcs $@ $^
-
-# Build shared library
-shared: $(BUILD_DIR)/$(SHARED_LIB)
-
-$(BUILD_DIR)/$(SHARED_LIB): $(OBJECTS)
-	$(CC) $(SHARED_FLAGS) -o $@ $^ $(LIBS)
-
-# Build examples
+# Build examples - each example compiles the entire library
 examples: $(EXAMPLES)
 
-$(BUILD_DIR)/%: $(EXAMPLE_DIR)/%.c $(BUILD_DIR)/$(STATIC_LIB) | $(BUILD_DIR)
-	$(CC) $(CFLAGS) $(INCLUDES) -o $@ $< -L$(BUILD_DIR) -lpfxr $(LIBS)
+$(BUILD_DIR)/%: $(EXAMPLE_DIR)/%.c pfxr.h | $(BUILD_DIR)
+	@echo "Compiling single-header example: $*"
+	$(CC) $(CFLAGS) -o $@ $< $(LIBS)
 
-# Build api_demo specifically
-$(BUILD_DIR)/api_demo: $(EXAMPLE_DIR)/api_demo.c $(BUILD_DIR)/$(STATIC_LIB) | $(BUILD_DIR)
-	$(CC) $(CFLAGS) $(INCLUDES) -o $@ $< -L$(BUILD_DIR) -lpfxr $(LIBS)
+# Test target
+test: $(BUILD_DIR)/simple_example
+	@echo "Running basic test..."
+	@echo "NOTE: Make sure to run this from the pfxr-c directory"
+	$(BUILD_DIR)/simple_example
 
-# Install (optional)
-install: static shared
+# Install header to system
+install: pfxr.h
 ifeq ($(OS),Windows_NT)
-	copy $(BUILD_DIR)\$(STATIC_LIB) "$(INSTALL_PREFIX)\lib\"
-	copy $(BUILD_DIR)\$(SHARED_LIB) "$(INSTALL_PREFIX)\lib\"
-	copy $(INC_DIR)\pfxr.h "$(INSTALL_PREFIX)\include\"
+	copy pfxr.h "C:\Program Files\include\"
 else
-	sudo cp $(BUILD_DIR)/$(STATIC_LIB) $(INSTALL_PREFIX)/lib/
-	sudo cp $(BUILD_DIR)/$(SHARED_LIB) $(INSTALL_PREFIX)/lib/
-	sudo cp $(INC_DIR)/pfxr.h $(INSTALL_PREFIX)/include/
-	$(LDCONFIG)
+	sudo cp pfxr.h /usr/local/include/
+	@echo "Header installed to /usr/local/include/pfxr.h"
+	@echo "You can now use: #include <pfxr.h>"
 endif
 
 # Clean build files
@@ -128,9 +93,10 @@ endif
 
 # Debug build
 debug: CFLAGS += -g -DDEBUG
-debug: all
+debug: examples
 
-# Test target
-test: examples
-	@echo "Running basic test..."
-	$(BUILD_DIR)/simple_example
+# Validate header syntax
+validate:
+	@echo "Validating pfxr.h syntax..."
+	$(CC) $(CFLAGS) -fsyntax-only -x c pfxr.h
+	@echo "Header syntax validation passed!"
